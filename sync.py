@@ -3,7 +3,7 @@
 dirsync — Bidirectional directory synchronizer
 
 Usage:
-  python sync.py [DIR_A] [DIR_B] [--conflict {newest,ask}] [--include-hidden]
+  python sync.py [DIR_A] [DIR_B] [--conflict {newest,ask}] [--include-hidden] [--once]
 
 Examples:
   python sync.py ~/OneDrive/Music ~/iCloud/Music
@@ -293,6 +293,11 @@ def main() -> None:
         default=False,
         help="Sync hidden files and directories (default: ignored)",
     )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Sync once and exit instead of watching for changes",
+    )
     args = parser.parse_args()
 
     dir_a = resolve_dir(args.dir_a, "DIR_A") if args.dir_a else prompt_path("directory A")
@@ -309,6 +314,9 @@ def main() -> None:
     print(f"  Hidden files      : {'included' if args.include_hidden else 'ignored'}")
 
     initial_sync(dir_a, dir_b, args.conflict, args.include_hidden)
+
+    if args.once:
+        return
 
     observer = Observer()
     observer.schedule(SyncHandler(dir_a, dir_b, args.include_hidden), str(dir_a), recursive=True)
